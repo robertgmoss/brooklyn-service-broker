@@ -181,23 +181,31 @@ public class BrooklynServiceInstanceService implements ServiceInstanceService {
             Map<String, Object> effectorParams = (Map<String, Object>) effector.get("params");
 
             String application = entityId;
-            if (!serviceDefinition.getMetadata().containsKey("brooklynServices")) {
-                throwExceptionSavingInstance(
-                        new ServiceInstanceUpdateNotSupportedException("no services found in metadata"),
-                        instance.withOperation(Operations.UPDATING)
-                );
-            }
-            List<Map<String, Object>> brooklynServices = (List<Map<String, Object>>) serviceDefinition.getMetadata().get("brooklynServices");
-            if (brooklynServices.size() != 1) {
-                throwExceptionSavingInstance(
-                        new ServiceInstanceUpdateNotSupportedException("brooklyn entity is ambiguous."),
-                        instance.withOperation(Operations.UPDATING)
-                );
+            String brooklynDescendentType = null;
+
+            if (findpath.containsKey("type")) {
+                brooklynDescendentType = (String)findpath.get("type");
             }
 
-            String brooklynCatalogId = (String)brooklynServices.get(0).get("type");
+            if(brooklynDescendentType == null) {
+                if (!serviceDefinition.getMetadata().containsKey("brooklynServices")) {
+                    throwExceptionSavingInstance(
+                            new ServiceInstanceUpdateNotSupportedException("no services found in metadata"),
+                            instance.withOperation(Operations.UPDATING)
+                    );
+                }
+                List<Map<String, Object>> brooklynServices = (List<Map<String, Object>>) serviceDefinition.getMetadata().get("brooklynServices");
+                if (brooklynServices.size() != 1) {
+                    throwExceptionSavingInstance(
+                            new ServiceInstanceUpdateNotSupportedException("brooklyn entity is ambiguous."),
+                            instance.withOperation(Operations.UPDATING)
+                    );
+                }
 
-            List<EntitySummary> entitySummaries = ServiceUtil.getFutureValueLoggingError(admin.getApplicationDescendents(application, brooklynCatalogId));
+                brooklynDescendentType = (String) brooklynServices.get(0).get("type");
+            }
+
+            List<EntitySummary> entitySummaries = ServiceUtil.getFutureValueLoggingError(admin.getApplicationDescendents(application, brooklynDescendentType));
             if (entitySummaries.size() > 1) {
                 throwExceptionSavingInstance(
                         new ServiceInstanceUpdateNotSupportedException("too many services to perform update (entity is ambiguous)."),
