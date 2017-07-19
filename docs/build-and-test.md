@@ -5,13 +5,6 @@ To build this project you need:
 
 - JDK 8
 - Gradle 2.2 or higher
-
-First, install the parent project to your local maven repo:
-
-    $ git clone https://github.com/robertgmoss/spring-boot-cf-service-broker.git
-    $ cd spring-boot-cf-service-broker
-    $ git checkout async
-    $ ./gradlew publishToMavenLocal
     
 Now you can build this project:
 
